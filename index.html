@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>💖 ANNU KI DUNIYA 💖</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Rajdhani:wght@700&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --pink: #ff4fa3;
+    --hotpink: #ff0080;
+    --gold: #ffd700;
+    --purple: #9b59b6;
+    --cyan: #00e5ff;
+    --orange: #ff6b35;
+    --white: #fff;
+    --deep: #0a0015;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--deep);
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    touch-action: pan-y;
+  }
+
+  /* ===== PARTICLE CANVAS ===== */
+  #bgCanvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* ===== PAGES WRAPPER ===== */
+  #pages {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  .page {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transform: translateY(60px) scale(0.96);
+    transition: opacity 0.9s cubic-bezier(.4,0,.2,1),
+                transform 0.9s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+    padding: 20px;
+  }
+  .page.active {
+    opacity: 1; pointer-events: all;
+    transform: translateY(0) scale(1);
+  }
+  .page.exit {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.04);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+
+  /* ===== NAV DOTS ===== */
+  #nav {
+    position: fixed; bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 12px;
+    z-index: 100;
+  }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    transform: scale(1.4);
+    box-shadow: 0 0 10px var(--gold);
+  }
+
+  /* ===== NAV ARROWS ===== */
+  .arrow-btn {
+    position: fixed;
+    bottom: 60px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--pink), var(--hotpink));
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 32px;
+    font-size: 14px;
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(255,79,163,0.5);
+    transition: all 0.3s;
+    letter-spacing: 1px;
+  }
+  .arrow-btn:active { transform: translateX(-50%) scale(0.95); }
+
+  /* ===== 3D TEXT ===== */
+  .text-3d {
+    font-family: 'Pacifico', cursive;
+    text-shadow:
+      2px 2px 0 #c0006a,
+      4px 4px 0 #900050,
+      6px 6px 0 #600035,
+      8px 8px 16px rgba(0,0,0,0.5);
+    transform-style: preserve-3d;
+    display: inline-block;
+    animation: float3d 4s ease-in-out infinite;
+  }
+  @keyframes float3d {
+    0%,100% { transform: perspective(400px) rotateX(0deg) rotateY(-3deg); }
+    50% { transform: perspective(400px) rotateX(2deg) rotateY(3deg); }
+  }
+
+  .blink-rainbow {
+    animation: rainbowBlink 1.2s infinite;
+  }
+  @keyframes rainbowBlink {
+    0%   { color: #ff4fa3; text-shadow: 0 0 20px #ff4fa3, 2px 2px 0 #c0006a, 4px 4px 0 #900050; }
+    16%  { color: #ffd700; text-shadow: 0 0 20px #ffd700, 2px 2px 0 #a08000, 4px 4px 0 #705800; }
+    33%  { color: #00e5ff; text-shadow: 0 0 20px #00e5ff, 2px 2px 0 #008099, 4px 4px 0 #005566; }
+    50%  { color: #ff6b35; text-shadow: 0 0 20px #ff6b35, 2px 2px 0 #c04010, 4px 4px 0 #802a00; }
+    66%  { color: #9b59b6; text-shadow: 0 0 20px #9b59b6, 2px 2px 0 #6a3480, 4px 4px 0 #3d1f50; }
+    83%  { color: #2ecc71; text-shadow: 0 0 20px #2ecc71, 2px 2px 0 #1a8048, 4px 4px 0 #0e5030; }
+    100% { color: #ff4fa3; text-shadow: 0 0 20px #ff4fa3, 2px 2px 0 #c0006a, 4px 4px 0 #900050; }
+  }
+
+  /* ===== GLOW PULSE ===== */
+  .glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%,100% { filter: drop-shadow(0 0 8px var(--pink)) drop-shadow(0 0 20px var(--hotpink)); }
+    50%      { filter: drop-shadow(0 0 20px var(--gold)) drop-shadow(0 0 40px #ff0); }
+  }
+
+  /* ===== FLOATING EMOJI ===== */
+  .float-emoji {
+    display: inline-block;
+    animation: floatBounce 2.5s ease-in-out infinite;
+  }
+  .float-emoji:nth-child(2) { animation-delay: 0.3s; }
+  .float-emoji:nth-child(3) { animation-delay: 0.6s; }
+  @keyframes floatBounce {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-14px) rotate(8deg); }
+  }
+
+  /* ===== SHIMMER ===== */
+  .shimmer {
+    background: linear-gradient(90deg, #ff4fa3 0%, #ffd700 25%, #00e5ff 50%, #ff4fa3 75%, #ffd700 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer {
+    to { background-position: 200% center; }
+  }
+
+  /* ===== CARD ===== */
+  .glass-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 24px;
+    backdrop-filter: blur(12px);
+    padding: 24px 28px;
+    box-shadow: 0 8px 32px rgba(255,79,163,0.18), 0 0 0 1px rgba(255,255,255,0.06);
+    max-width: 420px;
+    width: 95%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-card::before {
+    content: '';
+    position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(transparent 40%, rgba(255,215,0,0.08) 50%, transparent 60%);
+    animation: cardSpin 6s linear infinite;
+  }
+  @keyframes cardSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ===== SPARKLES ===== */
+  .sparkles-wrap { position: relative; display: inline-block; }
+  .sparkle {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: sparklePop 1.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes sparklePop {
+    0%,100% { transform: scale(0) rotate(0deg); opacity: 0; }
+    40%,60% { transform: scale(1) rotate(180deg); opacity: 1; }
+  }
+
+  /* ============================
+     PAGE 1 – GOOD MORNING
+  ============================ */
+  #p1 { background: radial-gradient(ellipse at 60% 30%, #1a0030 0%, #0a0015 70%); }
+
+  .sun-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff5a0 0%, #ffd700 40%, #ff8c00 80%);
+    box-shadow: 0 0 40px #ffd700, 0 0 80px #ff8c00, 0 0 120px #ff4500;
+    position: relative;
+    margin-bottom: 20px;
+    animation: sunRise 3s ease-out both, sunPulse 3s 3s ease-in-out infinite;
+  }
+  @keyframes sunRise {
+    from { transform: translateY(60px) scale(0.3); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  @keyframes sunPulse {
+    0%,100% { box-shadow: 0 0 40px #ffd700, 0 0 80px #ff8c00; }
+    50%     { box-shadow: 0 0 60px #fff176, 0 0 120px #ffd700, 0 0 180px #ff8c00; }
+  }
+  .sun-ray {
+    position: absolute;
+    width: 4px; height: 30px;
+    background: linear-gradient(to top, #ffd700, transparent);
+    left: 50%; top: 50%;
+    transform-origin: bottom center;
+    border-radius: 4px;
+  }
+
+  .gm-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(36px, 10vw, 72px);
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  .annu-name {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(48px, 14vw, 96px);
+    letter-spacing: 4px;
+  }
+
+  .tagline {
+    font-size: clamp(13px, 3.5vw, 18px);
+    color: rgba(255,255,255,0.75);
+    margin-top: 14px;
+    line-height: 1.6;
+  }
+
+  /* ============================
+     PAGE 2 – KAISA HO / BHAAV
+  ============================ */
+  #p2 { background: radial-gradient(ellipse at 40% 60%, #001a0a 0%, #0a0015 70%); }
+
+  .crown {
+    font-size: 60px;
+    animation: crownSpin 4s ease-in-out infinite;
+    display: block;
+    margin-bottom: 10px;
+  }
+  @keyframes crownSpin {
+    0%,100% { transform: rotate(-5deg) scale(1); }
+    50%      { transform: rotate(5deg) scale(1.1); }
+  }
+
+  .kaisa-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(16px, 5vw, 28px);
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    animation: fadeSlide 1s both;
+  }
+
+  .bhaav-text {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(32px, 9vw, 64px);
+    line-height: 1.2;
+    margin: 10px 0;
+  }
+
+  .bhaav-sub {
+    font-size: clamp(14px, 4vw, 20px);
+    color: #ffd700;
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+
+  .traits-wrap {
+    display: flex; flex-wrap: wrap;
+    gap: 10px; justify-content: center;
+    margin-top: 14px;
+  }
+  .trait-chip {
+    padding: 7px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1.5px solid;
+    animation: chipPop 0.5s cubic-bezier(.34,1.56,.64,1) both;
+    letter-spacing: 0.5px;
+  }
+  .chip-innocent { color: #00e5ff; border-color: #00e5ff; background: rgba(0,229,255,0.1); }
+  .chip-angry    { color: #ff4fa3; border-color: #ff4fa3; background: rgba(255,79,163,0.1); }
+  .chip-cute     { color: #ffd700; border-color: #ffd700; background: rgba(255,215,0,0.1); }
+  .chip-queen    { color: #9b59b6; border-color: #9b59b6; background: rgba(155,89,182,0.1); }
+  @keyframes chipPop {
+    from { transform: scale(0) rotate(-10deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  /* ============================
+     PAGE 3 – SHAYARI
+  ============================ */
+  #p3 { background: radial-gradient(ellipse at 50% 20%, #1a0020 0%, #0a0015 70%); }
+
+  .letter-wrap {
+    background: linear-gradient(135deg, rgba(20,5,35,0.95) 0%, rgba(10,0,21,0.98) 100%);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 28px 26px;
+    max-width: 420px;
+    width: 95%;
+    position: relative;
+    box-shadow: 0 0 40px rgba(255,79,163,0.15), inset 0 0 60px rgba(255,215,0,0.03);
+  }
+  .letter-wrap::before {
+    content: '✉';
+    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 32px;
+    filter: drop-shadow(0 0 8px #ffd700);
+  }
+  .letter-header {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(18px, 5vw, 26px);
+    color: #ffd700;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255,215,0,0.2);
+    padding-bottom: 10px;
+  }
+  .shayari-line {
+    font-size: clamp(15px, 4vw, 19px);
+    line-height: 1.8;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 8px;
+    animation: lineReveal 0.6s ease both;
+    font-style: italic;
+  }
+  @keyframes lineReveal {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .shayari-line:nth-child(2) { animation-delay: 0.3s; color: #ff9de2; }
+  .shayari-line:nth-child(3) { animation-delay: 0.6s; color: #ffe082; }
+  .shayari-line:nth-child(4) { animation-delay: 0.9s; color: #b2ebf2; }
+  .shayari-line:nth-child(5) { animation-delay: 1.2s; color: #ce93d8; }
+  .shayari-line:nth-child(6) { animation-delay: 1.5s; }
+  .letter-footer {
+    text-align: right;
+    margin-top: 14px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 18px;
+    color: var(--pink);
+    animation: fadeSlide 2s both;
+  }
+
+  /* ============================
+     PAGE 4 – BIRTHDAY
+  ============================ */
+  #p4 { background: radial-gradient(ellipse at 50% 40%, #1a0a00 0%, #0a0015 70%); }
+
+  .cake-wrap {
+    font-size: 70px;
+    text-align: center;
+    margin-bottom: 8px;
+    animation: cakeBounce 1s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 20px #ffd700);
+  }
+  @keyframes cakeBounce {
+    from { transform: scale(1) rotate(-3deg); }
+    to   { transform: scale(1.1) rotate(3deg); }
+  }
+
+  .bday-date {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(14px, 4vw, 22px);
+    color: #ffd700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    animation: fadeSlide 1s both;
+  }
+
+  .bday-title {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(28px, 8vw, 60px);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .bday-wish {
+    font-size: clamp(14px, 3.8vw, 18px);
+    color: rgba(255,255,255,0.85);
+    line-height: 1.7;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .balloons {
+    position: absolute;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .balloon {
+    position: absolute;
+    bottom: -80px;
+    border-radius: 50%;
+    animation: balloonRise linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes balloonRise {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.7; }
+    100% { transform: translateY(-110vh) translateX(var(--drift)) rotate(var(--spin)); opacity: 0; }
+  }
+
+  /* ============================
+     CONFETTI
+  ============================ */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 10px;
+    top: -10px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 200;
+    border-radius: 2px;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ============================
+     SHARED ANIMS
+  ============================ */
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .stagger-1 { animation: fadeSlide 0.7s 0.2s both; }
+  .stagger-2 { animation: fadeSlide 0.7s 0.5s both; }
+  .stagger-3 { animation: fadeSlide 0.7s 0.8s both; }
+  .stagger-4 { animation: fadeSlide 0.7s 1.1s both; }
+
+  /* Mobile tweaks */
+  @media (max-width: 380px) {
+    .glass-card { padding: 18px 16px; }
+    .letter-wrap { padding: 22px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- ============ PAGE 1: GOOD MORNING ============ -->
+<div id="pages">
+  <div class="page active" id="p1">
+    <div class="sun-ring" id="sunEl">
+    </div>
+
+    <div class="stagger-1">
+      <div class="gm-title blink-rainbow glow-pulse">Good Morning</div>
+    </div>
+
+    <div class="stagger-2" style="text-align:center;">
+      <div class="annu-name text-3d blink-rainbow">ANNU</div>
+    </div>
+
+    <div class="stagger-3">
+      <div class="glass-card">
+        <div style="font-size:28px; margin-bottom:8px;">
+          <span class="float-emoji">🌸</span>
+          <span class="float-emoji">☀️</span>
+          <span class="float-emoji">🌺</span>
+        </div>
+        <div class="tagline">
+          Subah ki pehli roshni jab aankh khulti hai,<br>
+          toh ek hi chehra aata hai zehan mein — 
+          <span style="color: var(--pink); font-weight:700;">ANNU! 💖</span><br><br>
+          Kitni innocent, kitni cute, aur thodi gusse wali bhi 😤🔥<br>
+          <span class="shimmer" style="font-size:16px; font-weight:700;">Shukriya itni sundar subah gift karne ke liye! ✨</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAGE 2: KAISA HO / BHAAV ============ -->
+  <div class="page" id="p2">
+    <span class="crown">👑</span>
+
+    <div class="kaisa-title stagger-1">Ek Sawaal Hai...</div>
+
+    <div class="stagger-2">
+      <div class="bhaav-text blink-rainbow text-3d">KAISA HAI<br>BHAAV BADH GYA?</div>
+    </div>
+
+    <div class="bhaav-sub stagger-3">😤 Thoda zyada hi attitude aa gaya! 👸</div>
+
+    <div class="glass-card stagger-4">
+      <div style="color: rgba(255,255,255,0.8); font-size: clamp(13px, 3.5vw, 17px); line-height: 1.7; margin-bottom: 12px;">
+        Yaar Annu, teri zindagi ek <span style="color:#ffd700;">royal drama</span> hai — 
+        ek second cute, next second angry queen 😂<br>
+        Par teri yahi ada toh dil chura leti hai! 💝
+      </div>
+
+      <div class="traits-wrap">
+        <div class="trait-chip chip-innocent" style="animation-delay:0.2s">😇 Super Innocent</div>
+        <div class="trait-chip chip-angry"    style="animation-delay:0.4s">😤 Gusse wali</div>
+        <div class="trait-chip chip-cute"     style="animation-delay:0.6s">🥰 Cuti Pii</div>
+        <div class="trait-chip chip-queen"    style="animation-delay:0.8s">👑 Queen Hai Tu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAGE 3: SHAYARI ============ -->
+  <div class="page" id="p3">
+    <div class="letter-wrap">
+      <div class="letter-header">
+        💌 Ek Dil Se — Sirf Tere Liye, Annu
+      </div>
+
+      <div class="shayari-line">Tere innocent chehere mein ek alag hi noor hai,</div>
+      <div class="shayari-line">Jo gusse mein bhi lagta kisi flower si khushboo hai.</div>
+      <div class="shayari-line">Zindagi ki bheed mein ek tu hi anokhi hai,</div>
+      <div class="shayari-line">Cute si teri ada, aur ye attitude bhi khubsoorat sahi.</div>
+      <div class="shayari-line">Hasti hai toh phool khilte hain jahaan,</div>
+      <div class="shayari-line">Rulati hai toh bhi dil kehta — rahe tu pareshaan. 💕</div>
+
+      <div class="letter-footer">
+        — Tere dil ka ek dost 🌹
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAGE 4: BIRTHDAY ============ -->
+  <div class="page" id="p4">
+    <div class="balloons" id="balloonLayer"></div>
+
+    <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center;">
+      <div class="cake-wrap">🎂</div>
+
+      <div class="bday-date stagger-1">🎉 12 May — Advance Birthday 🎉</div>
+
+      <div class="bday-title blink-rainbow text-3d stagger-2">Happy<br>Birthday<br>ANNU! 🎁</div>
+
+      <div class="glass-card stagger-3">
+        <div style="font-size:24px; margin-bottom:10px;">
+          <span class="float-emoji">🎊</span>
+          <span class="float-emoji">🌟</span>
+          <span class="float-emoji">🎈</span>
+        </div>
+        <div class="bday-wish">
+          Ek naya saal aaye aur tere liye<br>
+          khushiyon ki bauchaar laaye,<br>
+          <span style="color:#ffd700;">Teri muskurahat duniya ko roshan kare,</span><br>
+          Teri har khwaish puri ho jaaye. 🌸<br><br>
+          <span class="shimmer" style="font-size:18px; font-weight:700;">
+            Tujhe Dher Saari Badhaai, Pyaari Annu! 💖🎂
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div id="nav">
+  <div class="dot active" onclick="goTo(0)" title="Good Morning"></div>
+  <div class="dot" onclick="goTo(1)" title="Kaisa Ho"></div>
+  <div class="dot" onclick="goTo(2)" title="Shayari"></div>
+  <div class="dot" onclick="goTo(3)" title="Birthday"></div>
+</div>
+
+<button class="arrow-btn" id="nextBtn" onclick="nextPage()">Aage Chalo ➡️</button>
+
+<script>
+// ============ STATE ============
+let current = 0;
+const total = 4;
+const pageIds = ['p1','p2','p3','p4'];
+const nextLabels = ['Aage Chalo ➡️', 'Aage Chalo ➡️', 'Aage Chalo ➡️', '🔁 Pehle Page Par'];
+
+// ============ PARTICLES BG ============
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resizeCanvas() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const COLORS = ['#ff4fa3','#ffd700','#00e5ff','#9b59b6','#ff6b35','#2ecc71','#fff'];
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 2.5 + 0.5;
+    this.dx = (Math.random() - 0.5) * 0.4;
+    this.dy = (Math.random() - 0.5) * 0.4;
+    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    this.alpha = Math.random() * 0.5 + 0.2;
+    this.dAlpha = (Math.random() - 0.5) * 0.008;
+  }
+  update() {
+    this.x += this.dx; this.y += this.dy;
+    this.alpha += this.dAlpha;
+    if (this.alpha < 0.05 || this.alpha > 0.75) this.dAlpha *= -1;
+    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+function animParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ============ SUN RAYS ============
+const sun = document.getElementById('sunEl');
+for (let i = 0; i < 12; i++) {
+  const ray = document.createElement('div');
+  ray.className = 'sun-ray';
+  ray.style.transform = `translateX(-50%) rotate(${i * 30}deg) translateY(-70px)`;
+  ray.style.opacity = 0.7;
+  ray.style.animationDelay = `${i * 0.15}s`;
+  sun.appendChild(ray);
+}
+
+// ============ BALLOONS ============
+function createBalloons() {
+  const layer = document.getElementById('balloonLayer');
+  layer.innerHTML = '';
+  const balloonColors = ['#ff4fa3','#ffd700','#00e5ff','#ff6b35','#9b59b6','#2ecc71','#fff176'];
+  for (let i = 0; i < 14; i++) {
+    const b = document.createElement('div');
+    b.className = 'balloon';
+    const size = 30 + Math.random() * 30;
+    b.style.cssText = `
+      width:${size}px; height:${size * 1.3}px;
+      left:${Math.random() * 95}%;
+      background: radial-gradient(circle at 35% 30%, white 5%, ${balloonColors[i % balloonColors.length]} 60%);
+      box-shadow: 0 0 12px ${balloonColors[i % balloonColors.length]};
+      animation-duration: ${5 + Math.random() * 6}s;
+      animation-delay: ${Math.random() * 4}s;
+      --drift: ${(Math.random() - 0.5) * 80}px;
+      --spin: ${(Math.random() - 0.5) * 60}deg;
+    `;
+    layer.appendChild(b);
+  }
+}
+
+// ============ CONFETTI ============
+function launchConfetti(n = 30) {
+  const colors = ['#ff4fa3','#ffd700','#00e5ff','#ff6b35','#9b59b6','#2ecc71'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.cssText = `
+      left: ${Math.random() * 100}vw;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${6 + Math.random() * 8}px;
+      height: ${6 + Math.random() * 8}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${1.5 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.8}s;
+      transform: rotate(${Math.random() * 360}deg);
+    `;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+// ============ PAGE TRANSITIONS ============
+function goTo(idx) {
+  if (idx === current) return;
+  const oldPage = document.getElementById(pageIds[current]);
+  oldPage.classList.add('exit');
+  setTimeout(() => { oldPage.classList.remove('active', 'exit'); }, 600);
+
+  current = idx;
+  const newPage = document.getElementById(pageIds[current]);
+  setTimeout(() => {
+    newPage.classList.add('active');
+    onPageEnter(current);
+  }, 300);
+
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+  document.getElementById('nextBtn').textContent = nextLabels[current];
+}
+
+function nextPage() {
+  goTo((current + 1) % total);
+}
+
+function onPageEnter(idx) {
+  if (idx === 3) {
+    createBalloons();
+    setTimeout(() => launchConfetti(50), 400);
+    setTimeout(() => launchConfetti(40), 1200);
+  }
+  if (idx === 0) launchConfetti(20);
+}
+
+// ============ SWIPE / TOUCH ============
+let touchStartY = 0, touchStartX = 0;
+document.addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  const dy = touchStartY - e.changedTouches[0].clientY;
+  const dx = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(dx) < Math.abs(dy)) {
+    if (Math.abs(dy) > 50) {
+      if (dy > 0) goTo(Math.min(current + 1, total - 1));
+      else goTo(Math.max(current - 1, 0));
+    }
+  }
+}, { passive: true });
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(Math.min(current + 1, total - 1));
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(Math.max(current - 1, 0));
+});
+
+// Init
+onPageEnter(0);
+</script>
+</body>
+</html>
